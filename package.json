@@ -1,5 +1,8 @@
 {
-  "name": "node-pg-migrate",
+  "name": "@principiamentis/node-pg-migrate",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "version": "3.23.3",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
@@ -42,7 +45,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salsita/node-pg-migrate.git"
+    "url": "https://github.com/principiamentis/node-pg-migrate.git"
   },
   "dependencies": {
     "@types/pg": "^7.4.0",
