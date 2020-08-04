@@ -12,9 +12,9 @@
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
 Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
 
-### Looking for v2 docs?
+### Looking for v3 docs?
 
-see [v2 branch](https://github.com/salsita/node-pg-migrate/tree/v2).
+see [v3 branch](https://github.com/salsita/node-pg-migrate/tree/v3).
 
 ## Installation
 
@@ -24,9 +24,7 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 It will also install [`pg`](https://node-postgres.com/) library as it is peer dependency used for migrations.
 
-## Usage
-
-### Quick Example
+## Quick Example
 
 Add `"migrate": "node-pg-migrate"` to `scripts` section of `package.json` so you are able to quickly run commands.
 
@@ -34,33 +32,33 @@ Run `npm run migrate create my first migration`. It will create file `xxx_my-fir
 Open it and change contents to:
 
 ```js
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.createTable('users', {
     id: 'id',
     name: { type: 'varchar(1000)', notNull: true },
     createdAt: {
       type: 'timestamp',
       notNull: true,
-      default: pgm.func('current_timestamp')
-    }
-  });
+      default: pgm.func('current_timestamp'),
+    },
+  })
   pgm.createTable('posts', {
     id: 'id',
     userId: {
       type: 'integer',
       notNull: true,
       references: '"users"',
-      onDelete: 'cascade'
+      onDelete: 'cascade',
     },
     body: { type: 'text', notNull: true },
     createdAt: {
       type: 'timestamp',
       notNull: true,
-      default: pgm.func('current_timestamp')
-    }
-  });
-  pgm.createIndex('posts', 'userId');
-};
+      default: pgm.func('current_timestamp'),
+    },
+  })
+  pgm.createIndex('posts', 'userId')
+}
 ```
 
 Save migration file.
@@ -75,40 +73,20 @@ If you will want to change your schema later, you can e.g. add lead paragraph to
 Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
 
 ```js
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.addColumns('posts', {
-    lead: { type: 'text', notNull: true }
-  });
-};
+    lead: { type: 'text', notNull: true },
+  })
+}
 ```
 
 Run `npm run migrate up` and there will be new column in `posts` table :tada: :tada:
 
 Want to know more? Read docs:
 
-### Docs
+## Docs
 
-- [CLI](docs/cli.md)
-- [Programmatic API](docs/api.md)
-- [Defining Migrations](docs/migrations.md)
-  - [Tables](docs/tables.md)
-  - [Columns](docs/columns.md)
-  - [Constraints](docs/constraints.md)
-  - [Indexes](docs/indexes.md)
-  - [Functions](docs/functions.md)
-  - [Triggers](docs/triggers.md)
-  - [Schemas](docs/schemas.md)
-  - [Sequences](docs/sequences.md)
-  - [Views](docs/views.md)
-  - [Materialized Views](docs/mViews.md)
-  - [Types](docs/types.md)
-  - [Domains](docs/domains.md)
-  - [Operators](docs/operators.md)
-  - [Roles](docs/roles.md)
-  - [Policies](docs/policies.md)
-  - [Extensions](docs/extensions.md)
-  - [Miscellaneous](docs/misc.md)
-- [Transpiling migrations](docs/transpiling.md)
+Full docs are available at https://salsita.github.io/node-pg-migrate
 
 ## Explanation & Goals
 
@@ -122,7 +100,7 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 The MIT License (MIT)
 
-Copyright (c) 2016-2018 Salsita Software &lt;jando@salsitasoft.com&gt;
+Copyright (c) 2016-2020 Salsita Software &lt;jando@salsitasoft.com&gt;
 
 Copyright (c) 2014-2016 Theo Ephraim
 

@@ -1,21 +1,21 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.addColumns(
     't1',
     {
-      string: { type: 'text' }
+      string: { type: 'text' },
     },
-    { ifNotExists: true }
-  );
+    { ifNotExists: true },
+  )
 
   pgm.addColumns(
     't1',
     {
-      string: { type: 'text' }
+      string: { type: 'text' },
     },
-    { ifNotExists: true }
-  );
-};
+    { ifNotExists: true },
+  )
+}
 
-exports.down = pgm => {
-  pgm.dropColumns('t1', 'string');
-};
+exports.down = (pgm) => {
+  pgm.dropColumns('t1', 'string')
+}

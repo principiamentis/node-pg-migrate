@@ -13,8 +13,10 @@
   - `unique` _[boolean]_ - set to true if this is a unique index
   - `where` _[string]_ - raw sql for where clause of index
   - `concurrently` _[boolean]_ - create this index concurrently
-  - `opclass` _[string]_ - name of an operator class to use
+  - `ifNotExists` _[bool]_ - default false
+  - `opclass` _[[Name](migrations.md#type)]_ - name of an operator class to use
   - `method` _[string]_ - btree | hash | gist | spgist | gin
+  - `include` _[string or array of strings]_ - columns to add to the include clause
 
 **Aliases:** `addIndex`
 **Reverse Operation:** `dropIndex`

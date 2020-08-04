@@ -3,18 +3,15 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "version": "3.23.3",
+  "version": "5.3.0",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
-  "contributors": [
-    "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
-  ],
+  "contributors": ["Salsita Software <jando@salsitasoft.com>", "Christopher Quadflieg <chrissi92@hotmail.de>"],
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
   },
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "db",
     "database",
@@ -37,7 +34,7 @@
     "api"
   ],
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=10.0.0"
   },
   "bugs": {
     "url": "https://github.com/salsita/node-pg-migrate/issues"
@@ -49,51 +46,60 @@
   },
   "dependencies": {
     "@types/pg": "^7.4.0",
-    "decamelize": "^3.2.0",
+    "decamelize": "^4.0.0",
     "lodash": "~4.17.0",
-    "mkdirp": "~0.5.0",
-    "yargs": "~14.2.0"
+    "mkdirp": "~1.0.0",
+    "yargs": "~15.4.0"
   },
   "devDependencies": {
-    "@babel/cli": "7.6.4",
-    "@babel/core": "7.6.4",
-    "@babel/plugin-proposal-object-rest-spread": "7.6.2",
-    "@babel/preset-env": "7.6.3",
-    "babel-eslint": "10.0.3",
+    "@types/chai": "4.2.12",
+    "@types/chai-as-promised": "7.1.3",
+    "@types/lodash": "4.14.158",
+    "@types/mkdirp": "1.0.1",
+    "@types/mocha": "8.0.1",
+    "@types/proxyquire": "1.3.28",
+    "@types/sinon": "9.0.4",
+    "@types/sinon-chai": "3.2.4",
+    "@typescript-eslint/eslint-plugin": "3.7.1",
+    "@typescript-eslint/parser": "3.7.1",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "config": "3.2.4",
-    "cross-env": "6.0.3",
+    "config": "3.3.1",
+    "cross-env": "7.0.2",
+    "docsify-cli": "4.4.1",
     "dotenv": "8.2.0",
-    "eslint": "6.6.0",
-    "eslint-config-airbnb-base": "14.0.0",
-    "eslint-config-prettier": "6.5.0",
-    "eslint-plugin-import": "2.18.2",
-    "eslint-plugin-prettier": "3.1.1",
+    "eslint": "7.6.0",
+    "eslint-config-airbnb-base": "14.2.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-import-resolver-typescript": "2.2.0",
+    "eslint-plugin-import": "2.22.0",
+    "eslint-plugin-prettier": "3.1.4",
     "eslint-plugin-security": "1.4.0",
-    "husky": "3.0.9",
-    "lint-staged": "9.4.2",
-    "mocha": "6.2.2",
-    "pg": "7.12.1",
-    "prettier": "1.18.2",
+    "husky": "4.2.5",
+    "json5": "2.1.3",
+    "lint-staged": "10.2.11",
+    "mocha": "8.1.0",
+    "pg": "8.3.0",
+    "prettier": "2.0.5",
     "proxyquire": "2.1.3",
-    "sinon": "7.5.0",
-    "sinon-chai": "3.3.0"
+    "rimraf": "3.0.2",
+    "sinon": "9.0.2",
+    "sinon-chai": "3.5.0",
+    "ts-node": "8.10.2",
+    "typescript": "3.9.7"
   },
   "peerDependencies": {
-    "pg": ">=4.3.0 <8.0.0"
-  },
-  "optionalDependencies": {
-    "config": ">=1.0.0",
-    "dotenv": ">=1.0.0"
+    "pg": ">=4.3.0 <9.0.0"
   },
   "scripts": {
-    "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
-    "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
+    "prebuild": "rimraf dist",
+    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
+    "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "migrate": "node bin/node-pg-migrate",
-    "lint": "eslint . bin/*",
+    "lint": "eslint . bin/* --ext .js,.ts",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
-    "prepare": "npm run compile"
+    "prepare": "npm run build",
+    "docs:preview": "docsify serve docs"
   },
   "husky": {
     "hooks": {
@@ -101,7 +107,7 @@
     }
   },
   "lint-staged": {
-    "*.js": ["npm run lintfix", "git add"],
-    "*.{json,md}": ["prettier --write", "git add"]
+    "*.js": ["npm run lintfix"],
+    "*.{json,md}": ["prettier --write"]
   }
 }

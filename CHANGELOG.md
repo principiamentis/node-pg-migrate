@@ -1,5 +1,195 @@
 # Change Log
 
+## [5.3.0](2020-07-13)
+
+### Added
+
+- Display additional details when logging errors [#660](https://github.com/salsita/node-pg-migrate/pull/660)
+
+## [5.2.0](2020-06-26)
+
+### Added
+
+- View options [#656](https://github.com/salsita/node-pg-migrate/pull/656)
+
+## [5.1.1](2020-06-08)
+
+### Fixed
+
+- Fix creating migration [#646](https://github.com/salsita/node-pg-migrate/pull/646)
+
+## [5.1.0](2020-06-05)
+
+### Added
+
+- Ability to specify own template file [#642](https://github.com/salsita/node-pg-migrate/pull/642)
+
+## [5.0.2](2020-06-05)
+
+### Fixed
+
+- Fix alter column collation [#641](https://github.com/salsita/node-pg-migrate/pull/641)
+
+## [5.0.1](2020-06-02)
+
+### Fixed
+
+- Keep `this` bind in logger methods [#638](https://github.com/salsita/node-pg-migrate/pull/638)
+
+## [5.0.0](2020-05-19)
+
+### Breaking changes
+
+- remove node 8 support [#615](https://github.com/salsita/node-pg-migrate/pull/615)
+- Ability to use sort of UTC time in filename [#622](https://github.com/salsita/node-pg-migrate/pull/622)
+
+  If you used a different format for migrations names than the default one it can potentially break the order of your migrations
+
+- Migration can be also symlink [#630](https://github.com/salsita/node-pg-migrate/pull/630)
+
+  If you have symlinks in the migration folder, migration can potentially break
+
+### Fixed
+
+- Fixed position of TEMPORARY clause in create table [#629](https://github.com/salsita/node-pg-migrate/pull/629)
+
+## [4.8.0](2020-05-04)
+
+### Aded
+
+- add DB env var and tsconfig path to config options [#613](https://github.com/salsita/node-pg-migrate/pull/613)
+
+## [4.7.0](2020-04-29)
+
+### Aded
+
+- Export ColumnDefinition [#611](https://github.com/salsita/node-pg-migrate/pull/611)
+- feat: support for parsing `tsconfig.json` with comments [#606](https://github.com/salsita/node-pg-migrate/pull/606)
+
+### Fixed
+
+- pipe return writeable, should use close event [#608](https://github.com/salsita/node-pg-migrate/pull/608)
+
+## [4.6.2](2020-04-23)
+
+### Fixed
+
+- Fixing default options [#601](https://github.com/salsita/node-pg-migrate/pull/601)
+
+## [4.6.1](2020-04-08)
+
+### Fixed
+
+- Accepting Pool Client [#596](https://github.com/salsita/node-pg-migrate/pull/596)
+
+## [4.6.0](2020-04-07)
+
+### Added
+
+- `reject-unauthorized` CLI option [#594](https://github.com/salsita/node-pg-migrate/pull/594)
+
+## [4.5.1](2020-04-03)
+
+### Fixed
+
+- Do provide default cli option value only if not specified [#588](https://github.com/salsita/node-pg-migrate/pull/588)
+- Fix locking [#586](https://github.com/salsita/node-pg-migrate/pull/586)
+
+## [4.5.0](2020-04-01)
+
+### Added
+
+- Command line arguments should override config ones [#585](https://github.com/salsita/node-pg-migrate/pull/585)
+
+## [4.4.0](2020-03-31)
+
+### Added
+
+- Support for pg v8 [#584](https://github.com/salsita/node-pg-migrate/pull/584)
+
+## [4.3.0](2020-03-30)
+
+### Added
+
+- Possibility to pass custom logger [#580](https://github.com/salsita/node-pg-migrate/pull/580)
+- Ability to switch off debug logging [#581](https://github.com/salsita/node-pg-migrate/pull/581)
+
+## [4.2.3](2020-03-17)
+
+Release with updated dependencies
+
+## [4.2.2](2020-01-20)
+
+### Fixed
+
+- Escape BEFORE and AFTER in addTypeValue [#554](https://github.com/salsita/node-pg-migrate/pull/554)
+
+## [4.2.1](2020-01-07)
+
+### Fixed
+
+- Fixing typing of createTrigger parameters [#548](https://github.com/salsita/node-pg-migrate/pull/548)
+
+## [4.2.0](2019-12-19)
+
+### Added
+
+- Adding include option for createIndex [#537](https://github.com/salsita/node-pg-migrate/pull/537)
+
+## [4.1.0](2019-12-13)
+
+### Added
+
+- Expression generated columns [#532](https://github.com/salsita/node-pg-migrate/pull/532)
+
+## [4.0.0](2019-12-12)
+
+## [4.0.0-rc2](2019-12-11)
+
+### Added
+
+- Allow 'Down' migrations in .sql files [#530](https://github.com/salsita/node-pg-migrate/pull/530)
+
+## [4.0.0-rc1](2019-12-02)
+
+### Breaking changes
+
+- Drop old node support [#526](https://github.com/salsita/node-pg-migrate/pull/526)
+
+## [4.0.0-rc](2019-12-02)
+
+Rewrite in typescript
+
+### Breaking changes
+
+- Removed optional dependencies [#509](https://github.com/salsita/node-pg-migrate/pull/509)
+
+  If you are using `config` or `dotenv` configuration, it is no longer installed as optional dependency. You have to provide this package yourself.
+
+- Write node-pg-migrate in TypeScript
+  [#502](https://github.com/salsita/node-pg-migrate/pull/502)
+  [#510](https://github.com/salsita/node-pg-migrate/pull/510)
+  [#515](https://github.com/salsita/node-pg-migrate/pull/515)
+  [#516](https://github.com/salsita/node-pg-migrate/pull/516)
+  [#519](https://github.com/salsita/node-pg-migrate/pull/519)
+  [#520](https://github.com/salsita/node-pg-migrate/pull/520)
+  [#523](https://github.com/salsita/node-pg-migrate/pull/523)
+
+  - Fixed some issues with types which did not correspond to how code behave.
+  - `functionArgs` in trigger options renamed to `functionParams` because of consistency.
+
+- Support for TS migrations [#521](https://github.com/salsita/node-pg-migrate/pull/521)
+
+### Added
+
+- Improve error message in migration.js [#506](https://github.com/salsita/node-pg-migrate/pull/506)
+- Another way for transpiling TypeScript [#522](https://github.com/salsita/node-pg-migrate/pull/522)
+
+### Fixes
+
+- Updates to docs - specifying schema for trigger_name [#505](https://github.com/salsita/node-pg-migrate/pull/505)
+- createIndex doc [#524](https://github.com/salsita/node-pg-migrate/pull/524)
+
 ## [3.23.3](2019-10-10)
 
 ### Fixed

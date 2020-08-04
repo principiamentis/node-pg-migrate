@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "lib": ["es2018"],
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true
+  },
+  "exclude": ["node_modules", "templates", "dist", "bin"]
+}

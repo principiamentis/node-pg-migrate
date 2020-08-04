@@ -1,9 +1,9 @@
-exports.up = pgm => {
-  pgm.dropColumns('t1', 'string');
-};
+exports.up = (pgm) => {
+  pgm.dropColumns('t1', 'string')
+}
 
-exports.down = pgm => {
+exports.down = (pgm) => {
   pgm.addColumns('t1', {
-    string: { type: 'text', notNull: false }
-  });
-};
+    string: { type: 'text', notNull: false },
+  })
+}
