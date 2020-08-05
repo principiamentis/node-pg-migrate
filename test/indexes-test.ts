@@ -4,7 +4,7 @@ import { options1, options2 } from './utils'
 
 type CreateIndexParams = Parameters<ReturnType<typeof Indexes.createIndex>>
 
-describe('lib/operations/indexes', () => {
+describe('src/operations/indexes', () => {
   describe('.create', () => {
     it('check schema not included in index name', () => {
       const args: CreateIndexParams = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']]

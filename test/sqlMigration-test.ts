@@ -4,7 +4,7 @@ import { getActions } from '../src/sqlMigration'
 
 /* eslint-disable no-unused-expressions */
 
-describe('lib/sqlMigration', () => {
+describe('src/sqlMigration', () => {
   describe('getActions', () => {
     it('without comments', () => {
       const content = 'SELECT 1 FROM something'

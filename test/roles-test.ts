@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import * as Roles from '../src/operations/roles'
 import { options1, options2 } from './utils'
 
-describe('lib/operations/roles', () => {
+describe('src/operations/roles', () => {
   describe('.create', () => {
     it('check defaults', () => {
       const sql1 = Roles.createRole(options1)('roleTest')

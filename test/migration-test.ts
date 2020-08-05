@@ -12,7 +12,7 @@ const migrationsTable = 'pgmigrations'
 const actionsCallback = require(`./${callbackMigration}`) // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
 const actionsPromise = require(`./${promiseMigration}`) // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
 
-describe('lib/migration', () => {
+describe('src/migration', () => {
   const dbMock = {} as DBConnection
   const logger: Logger = { debug: () => null, info: () => null, warn: () => null, error: () => null }
   const options = { migrationsTable } as RunnerOption

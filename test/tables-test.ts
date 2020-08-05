@@ -6,7 +6,7 @@ type CreateTableParams = Parameters<ReturnType<typeof Tables.createTable>>
 type DropColumnsParams = Parameters<ReturnType<typeof Tables.dropColumns>>
 type AddConstraintParams = Parameters<ReturnType<typeof Tables.addConstraint>>
 
-describe('lib/operations/tables', () => {
+describe('src/operations/tables', () => {
   describe('.create', () => {
     it('check schemas can be used', () => {
       const args: CreateTableParams = [{ schema: 'mySchema', name: 'myTableName' }, { idColumn: 'serial' }]

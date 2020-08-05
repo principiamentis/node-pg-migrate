@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const Policies = require('../src/operations/policies')
 const { options1, options2 } = require('./utils')
 
-describe('lib/operations/policies', () => {
+describe('src/operations/policies', () => {
   describe('.create', () => {
     it('check defaults', () => {
       const args = [{ schema: 'mySchema', name: 'myTableName' }, 'getIn']

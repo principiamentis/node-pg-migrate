@@ -22,7 +22,7 @@ const pgMock = {
 
 const { default: Db } = proxyquire('../src/db', { pg: pgMock })
 
-describe('lib/db', () => {
+describe('src/db', () => {
   let sandbox: SinonSandbox
   const log: typeof console.log = () => null
   const client = new Client()

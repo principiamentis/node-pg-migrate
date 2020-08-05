@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const Functions = require('../src/operations/functions')
 const { options1, options2 } = require('./utils')
 
-describe('lib/operations/functions', () => {
+describe('src/operations/functions', () => {
   const params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }]
   describe('.create', () => {
     it('throws on missing language', () => {

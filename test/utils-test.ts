@@ -3,7 +3,7 @@ import { escapeValue, applyType } from '../src/utils'
 import { ColumnDefinitions } from '../src/operations/tablesTypes'
 import PgLiteral from '../src/operations/PgLiteral'
 
-describe('lib/utils', () => {
+describe('src/utils', () => {
   describe('.escapeValue', () => {
     it("parse null to 'NULL'", () => {
       const value = null
