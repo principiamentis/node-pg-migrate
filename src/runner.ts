@@ -223,7 +223,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
         await runMigrations(toRun, 'apply', options.direction)
         await db.query('COMMIT')
       } catch (err) {
-        logger.error(err);
+        logger.error(err)
         logger.warn('> Rolling back attempted migration ...')
         await db.query('ROLLBACK')
         throw err
