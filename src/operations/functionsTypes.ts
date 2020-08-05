@@ -37,9 +37,9 @@ type CreateFunctionFn = (
 ) => string | string[]
 export type CreateFunction = CreateFunctionFn & { reverse: CreateFunctionFn }
 export type AlterFunction = (
-    functionName: Name,
-    functionParams: FunctionParam[],
-    functionOptions: AlterFunctionOptionsEn & FunctionOptions
+  functionName: Name,
+  functionParams: FunctionParam[],
+  functionOptions: AlterFunctionOptionsEn & FunctionOptions,
 ) => string | string[]
 export type DropFunction = (
   functionName: Name,

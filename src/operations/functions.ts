@@ -1,54 +1,38 @@
 import { MigrationOptions } from '../types'
 import { escapeValue, formatParams, makeComment } from '../utils'
 import { AlterFunction, CreateFunction, DropFunction, FunctionOptions, RenameFunction } from './functionsTypes'
-import { DropOptions } from './generalTypes';
+import { DropOptions } from './generalTypes'
 
-export { CreateFunction, DropFunction, RenameFunction }
+export { AlterFunction, CreateFunction, DropFunction, RenameFunction }
 
 function getOptionString(functionOptions: FunctionOptions & DropOptions) {
-  const {
-    window,
-    behavior,
-    onNull,
-    strict,
-    security,
-    parallel,
-    cost,
-    rows,
-    support
-  } = functionOptions;
-  const options = [];
+  const { window, behavior, onNull, strict, security, parallel, cost, rows, support } = functionOptions
+  const options = []
   if (behavior) {
-    options.push(behavior);
+    options.push(behavior)
   }
   if (window) {
-    options.push('WINDOW');
+    options.push('WINDOW')
   }
   if (typeof onNull !== 'undefined' || typeof strict !== 'undefined') {
-    options.push(
-        `${
-            onNull === true || onNull === 'NULL' || strict
-                ? 'RETURNS NULL'
-                : 'CALLED'
-        } ON NULL INPUT`
-    );
+    options.push(`${onNull === true || onNull === 'NULL' || strict ? 'RETURNS NULL' : 'CALLED'} ON NULL INPUT`)
   }
   if (security) {
-    options.push(`SECURITY ${security}`);
+    options.push(`SECURITY ${security}`)
   }
   if (parallel) {
-    options.push(`PARALLEL ${parallel}`);
+    options.push(`PARALLEL ${parallel}`)
   }
   if (typeof cost !== 'undefined') {
-    options.push(`COST ${cost}`);
+    options.push(`COST ${cost}`)
   }
   if (typeof rows !== 'undefined') {
-    options.push(`ROWS ${rows}`);
+    options.push(`ROWS ${rows}`)
   }
   if (support) {
-    options.push(`SUPPORT ${support}`);
+    options.push(`SUPPORT ${support}`)
   }
-  return options.map(o => `\n  ${o}`).join('');
+  return options.map((o) => `\n  ${o}`).join('')
 }
 
 export function dropFunction(mOptions: MigrationOptions) {
@@ -78,12 +62,12 @@ export function createFunction(mOptions: MigrationOptions) {
       `CREATE${replaceStr} FUNCTION ${functionNameStr}${paramsStr}
   RETURNS ${returns}
   LANGUAGE ${language}
-  AS ${escapeValue(definition)}${getOptionString(functionOptions)};`
-    ];
+  AS ${escapeValue(definition)}${getOptionString(functionOptions)};`,
+    ]
     if (typeof comment !== 'undefined') {
-      stmts.push(makeComment('FUNCTION', functionNameStr + paramsStr, comment));
+      stmts.push(makeComment('FUNCTION', functionNameStr + paramsStr, comment))
     }
-    return stmts.join('\n');
+    return stmts.join('\n')
   }
   _create.reverse = dropFunction(mOptions)
   return _create
@@ -91,51 +75,46 @@ export function createFunction(mOptions: MigrationOptions) {
 
 export function alterFunction(mOptions: MigrationOptions) {
   const _alter: AlterFunction = (functionName, functionParams = [], functionOptions) => {
-    const idStr =
-        mOptions.literal(functionName) + formatParams(functionParams, mOptions);
-    const { owner, comment } = functionOptions;
-    const options = getOptionString(functionOptions);
-    const stmts = [];
+    const idStr = mOptions.literal(functionName) + formatParams(functionParams, mOptions)
+    const { owner, comment } = functionOptions
+    const options = getOptionString(functionOptions)
+    const stmts = []
     if (owner) {
       stmts.push(`ALTER FUNCTION ${idStr}
-  OWNER TO ${owner};`);
+  OWNER TO ${owner};`)
     }
     if (options) {
-      stmts.push(`ALTER FUNCTION ${idStr}${options};`);
+      stmts.push(`ALTER FUNCTION ${idStr}${options};`)
     }
     if (typeof comment !== 'undefined') {
-      stmts.push(makeComment('FUNCTION', idStr, comment));
+      stmts.push(makeComment('FUNCTION', idStr, comment))
     }
-    return stmts.join('\n');
-  };
-  return _alter;
+    return stmts.join('\n')
+  }
+  return _alter
 }
 
 export function renameFunction(mOptions: MigrationOptions) {
   const _rename: RenameFunction = (oldName, functionParams = [], newName) => {
-    const paramsStr = formatParams(functionParams, mOptions);
-    let oldFn = typeof oldName === 'string' ? { name: oldName } : oldName;
-    const newFn = typeof newName === 'string' ? { name: newName } : newName;
+    const paramsStr = formatParams(functionParams, mOptions)
+    let oldFn = typeof oldName === 'string' ? { name: oldName } : oldName
+    const newFn = typeof newName === 'string' ? { name: newName } : newName
 
-    const stmts = [];
+    const stmts = []
     if (newFn.schema && newFn.schema !== oldFn.schema) {
-      const oldFunctionNameStr = mOptions.literal(oldFn);
-      const newFunctionSchemaStr = mOptions.literal(newFn.schema);
-      stmts.push(
-          `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} SET SCHEMA ${newFunctionSchemaStr};`
-      );
-      oldFn = { ...oldFn, schema: newFn.schema };
+      const oldFunctionNameStr = mOptions.literal(oldFn)
+      const newFunctionSchemaStr = mOptions.literal(newFn.schema)
+      stmts.push(`ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} SET SCHEMA ${newFunctionSchemaStr};`)
+      oldFn = { ...oldFn, schema: newFn.schema }
     }
     if (newFn.name !== oldFn.name) {
-      const oldFunctionNameStr = mOptions.literal(oldFn);
-      const newFunctionNameStr = mOptions.literal(newFn.name);
-      stmts.push(
-          `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`
-      );
+      const oldFunctionNameStr = mOptions.literal(oldFn)
+      const newFunctionNameStr = mOptions.literal(newFn.name)
+      stmts.push(`ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`)
     }
-    return stmts.join('\n');
-  };
+    return stmts.join('\n')
+  }
   _rename.reverse = (oldFunctionName, functionParams, newFunctionName) =>
-      _rename(newFunctionName, functionParams, oldFunctionName);
-  return _rename;
+    _rename(newFunctionName, functionParams, oldFunctionName)
+  return _rename
 }
