@@ -1,8 +1,7 @@
 import runner from './runner'
-import libRunner from './lib'
 import { Migration } from './migration'
 import { RunnerOption, MigrationBuilder, PgType } from './types'
-import PgLiteral from './operations/PgLiteral'
+import PgLiteral from '../operations/PgLiteral'
 import {
   Value,
   Name,
@@ -11,7 +10,7 @@ import {
   IfNotExistsOption,
   CascadeOption,
   DropOptions,
-} from './operations/generalTypes'
+} from '../operations/generalTypes'
 import {
   CreateDomain,
   DropDomain,
@@ -19,16 +18,16 @@ import {
   RenameDomain,
   DomainOptionsCreate,
   DomainOptionsAlter,
-} from './operations/domainsTypes'
-import { CreateExtension, DropExtension, Extension, CreateExtensionOptions } from './operations/extensionsTypes'
+} from '../operations/domainsTypes'
+import { CreateExtension, DropExtension, Extension, CreateExtensionOptions } from '../operations/extensionsTypes'
 import {
   CreateFunction,
   DropFunction,
   RenameFunction,
   FunctionParam,
   FunctionOptions,
-} from './operations/functionsTypes'
-import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from './operations/indexesTypes'
+} from '../operations/functionsTypes'
+import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from '../operations/indexesTypes'
 import {
   CreateOperator,
   DropOperator,
@@ -44,8 +43,8 @@ import {
   DropOperatorOptions,
   OperatorListDefinition,
   CreateOperatorClassOptions,
-} from './operations/operatorsTypes'
-import { Sql } from './operations/othersTypes'
+} from '../operations/operatorsTypes'
+import { Sql } from '../operations/othersTypes'
 import {
   CreatePolicy,
   DropPolicy,
@@ -53,8 +52,8 @@ import {
   RenamePolicy,
   CreatePolicyOptions,
   PolicyOptions,
-} from './operations/policiesTypes'
-import { CreateRole, DropRole, AlterRole, RenameRole, RoleOptions } from './operations/rolesTypes'
+} from '../operations/policiesTypes'
+import { CreateRole, DropRole, AlterRole, RenameRole, RoleOptions } from '../operations/rolesTypes'
 import {
   CreateSequence,
   DropSequence,
@@ -62,8 +61,8 @@ import {
   RenameSequence,
   SequenceOptionsCreate,
   SequenceOptionsAlter,
-} from './operations/sequencesTypes'
-import { CreateSchema, DropSchema, RenameSchema, CreateSchemaOptions } from './operations/schemasTypes'
+} from '../operations/sequencesTypes'
+import { CreateSchema, DropSchema, RenameSchema, CreateSchemaOptions } from '../operations/schemasTypes'
 import {
   CreateTable,
   DropTable,
@@ -82,8 +81,8 @@ import {
   AlterTableOptions,
   AlterColumnOptions,
   ConstraintOptions,
-} from './operations/tablesTypes'
-import { CreateTrigger, DropTrigger, RenameTrigger, TriggerOptions } from './operations/triggersTypes'
+} from '../operations/tablesTypes'
+import { CreateTrigger, DropTrigger, RenameTrigger, TriggerOptions } from '../operations/triggersTypes'
 import {
   CreateType,
   DropType,
@@ -95,7 +94,7 @@ import {
   RenameTypeAttribute,
   RenameTypeValue,
   AddTypeValueOptions,
-} from './operations/typesTypes'
+} from '../operations/typesTypes'
 import {
   CreateView,
   DropView,
@@ -105,7 +104,7 @@ import {
   CreateViewOptions,
   AlterViewOptions,
   AlterViewColumnOptions,
-} from './operations/viewsTypes'
+} from '../operations/viewsTypes'
 import {
   CreateMaterializedView,
   DropMaterializedView,
@@ -116,7 +115,7 @@ import {
   CreateMaterializedViewOptions,
   AlterMaterializedViewOptions,
   RefreshMaterializedViewOptions,
-} from './operations/viewsMaterializedTypes'
+} from '../operations/viewsMaterializedTypes'
 
 export {
   runner as default,
@@ -235,5 +234,4 @@ export {
   CreateMaterializedViewOptions,
   AlterMaterializedViewOptions,
   RefreshMaterializedViewOptions,
-  libRunner,
 }
