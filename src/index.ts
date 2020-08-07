@@ -1,5 +1,5 @@
 import runner from './runner'
-import libRunner from './lib'
+import libRunner from './lib/libRunner'
 import { Migration } from './migration'
 import { RunnerOption, MigrationBuilder, PgType } from './types'
 import PgLiteral from './operations/PgLiteral'

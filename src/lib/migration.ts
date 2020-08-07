@@ -23,10 +23,8 @@ export const loadMigrationFiles = async (dir: string) => {
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true })
   return dirContent
     .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
-    .filter((file): file is string => Boolean(file))
+    .filter((file): file is string => Boolean(file) && !/^reset.*$/.test(typeof file === 'string' ? file : '')) // TODO use object for split migrations/reset/next
     .sort()
-  // const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
-  // return ignorePattern === undefined ? files : files.filter((i) => !filter.test(i))
 }
 
 const getSuffixFromFileName = (fileName: string) => path.extname(fileName).substr(1)
@@ -96,17 +94,13 @@ export class Migration implements RunMigration {
     name: string,
     directory: string,
     _language?: 'js' | 'ts' | 'sql' | CreateOptions,
-    _ignorePattern?: string,
     _filenameFormat?: FilenameFormat,
   ) {
     if (typeof _language === 'string') {
       // eslint-disable-next-line no-console
       console.warn('This usage is deprecated. Please use this method with options object argument')
     }
-    const options =
-      typeof _language === 'object'
-        ? _language
-        : { language: _language, ignorePattern: _ignorePattern, filenameFormat: _filenameFormat }
+    const options = typeof _language === 'object' ? _language : { language: _language, filenameFormat: _filenameFormat }
     const { filenameFormat = FilenameFormat.timestamp } = options
 
     // ensure the migrations directory exists

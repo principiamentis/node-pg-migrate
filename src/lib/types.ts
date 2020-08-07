@@ -205,19 +205,14 @@ export interface RunnerOptionConfig {
   checkOrder?: boolean
   direction: MigrationDirection
   count: number
-  // timestamp?: boolean
-  // ignorePattern?: string
   file?: string
   dryRun?: boolean
-  // createSchema?: boolean
   createMigrationsSchema?: boolean
   singleTransaction?: boolean
   noLock?: boolean
   fake?: boolean
   decamelize?: boolean
-  // log?: LogFn
   logger: Logger
-  // verbose?: boolean
 }
 
 export interface ConnectionConfig {
