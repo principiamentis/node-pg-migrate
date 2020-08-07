@@ -11,7 +11,6 @@ import {
   Logger,
 } from './types'
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
-import migrateSqlFile from './sqlMigration'
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964
@@ -28,11 +27,8 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
       await Promise.all(
         files.map(async (file) => {
           const filePath = `${options.dir}/${file}`
-          const actions: MigrationBuilderActions =
-            path.extname(filePath) === '.sql'
-              ? await migrateSqlFile(filePath)
-              : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-                require(path.relative(__dirname, filePath))
+          // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
+          const actions: MigrationBuilderActions = require(path.relative(__dirname, filePath))
           shorthands = { ...shorthands, ...actions.shorthands }
           return new Migration(
             db,
@@ -148,23 +144,6 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
     (promise: Promise<unknown>, migration) => promise.then(() => migration[method](direction)),
     Promise.resolve(),
   )
-
-// const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
-//   let loggerObject: Logger = console
-//   if (typeof logger === 'object') {
-//     loggerObject = logger
-//   } else if (typeof log === 'function') {
-//     loggerObject = { debug: log, info: log, warn: log, error: log }
-//   }
-//   return verbose
-//     ? loggerObject
-//     : {
-//         debug: undefined,
-//         info: loggerObject.info.bind(loggerObject),
-//         warn: loggerObject.warn.bind(loggerObject),
-//         error: loggerObject.error.bind(loggerObject),
-//       }
-// }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const { logger } = options
