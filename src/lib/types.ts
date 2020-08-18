@@ -192,7 +192,7 @@ export enum PgType { // eslint-disable-line import/prefer-default-export
   XML = 'xml', // XML data
 }
 
-export type MigrationDirection = 'up' | 'down'
+export type MigrationDirection = 'up' | 'down' | 'reset'
 
 export type LogFn = (msg: string) => void
 export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn }

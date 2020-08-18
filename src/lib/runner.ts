@@ -12,6 +12,12 @@ import {
 } from './types'
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
 
+interface MigrationVariant {
+  migrations: Migration[]
+  next: Migration | null
+  reset: Migration | null
+}
+
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964
 
@@ -19,30 +25,34 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
+const getMigration = (db: DBConnection, options: RunnerOption, logger: Logger, file: string) => {
+  let shorthands: ColumnDefinitions = {}
+  const filePath = `${options.dir}/${file}`
+  // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
+  const actions: MigrationBuilderActions = require(path.relative(__dirname, filePath))
+  shorthands = { ...shorthands, ...actions.shorthands }
+  return new Migration(
+    db,
+    filePath,
+    actions,
+    options,
+    {
+      ...shorthands,
+    },
+    logger,
+  )
+}
+
 const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: Logger) => {
   try {
-    let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir)
-    return (
-      await Promise.all(
-        files.map(async (file) => {
-          const filePath = `${options.dir}/${file}`
-          // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
-          const actions: MigrationBuilderActions = require(path.relative(__dirname, filePath))
-          shorthands = { ...shorthands, ...actions.shorthands }
-          return new Migration(
-            db,
-            filePath,
-            actions,
-            options,
-            {
-              ...shorthands,
-            },
-            logger,
-          )
-        }),
-      )
-    ).sort((m1, m2) => m1.timestamp - m2.timestamp)
+    return {
+      migrations: (
+        await Promise.all(files.migrations.map(async (file) => getMigration(db, options, logger, file)))
+      ).sort((m1, m2) => m1.timestamp - m2.timestamp),
+      next: files.next ? await getMigration(db, options, logger, files.next) : null,
+      reset: files.reset ? await getMigration(db, options, logger, files.reset) : null,
+    }
   } catch (err) {
     throw new Error(`Can't get migration files: ${err.stack}`)
   }
@@ -109,11 +119,11 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
   return db.column(nameColumn, `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`)
 }
 
-const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: Migration[]): Migration[] => {
+const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: MigrationVariant): Migration[] => {
   if (options.direction === 'down') {
     const downMigrations: Array<string | Migration> = runNames
       .filter((migrationName) => !options.file || options.file === migrationName)
-      .map((migrationName) => migrations.find(({ name }) => name === migrationName) || migrationName)
+      .map((migrationName) => migrations.migrations.find(({ name }) => name === migrationName) || migrationName)
     const toRun = downMigrations.slice(-Math.abs(options.count === undefined ? 1 : options.count)).reverse()
     const deletedMigrations = toRun.filter((migration): migration is string => typeof migration === 'string')
     if (deletedMigrations.length) {
@@ -122,9 +132,33 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
     }
     return toRun as Migration[]
   }
-  const upMigrations = migrations.filter(
-    ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
-  )
+  if (options.direction === 'reset') {
+    const toRun = [migrations.reset]
+    return toRun as Migration[]
+  }
+
+  let upMigrations
+
+  if (options.file) {
+    const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
+
+    if (index < 0) {
+      throw new Error(`Definitions of migrations ${options.file} not exist.`)
+    }
+
+    upMigrations = migrations.migrations.slice(0, index + 1)
+  } else {
+    upMigrations = migrations.migrations
+  }
+
+  // upMigrations = migrations.migrations.filter(
+  //   ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
+  // )
+
+  // console.log('########################')
+  // console.log(upMigrations)
+  // console.log('########################')
+
   return upMigrations.slice(0, Math.abs(options.count === undefined ? Infinity : options.count))
 }
 
@@ -170,7 +204,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
     ])
 
     if (options.checkOrder) {
-      checkOrder(runNames, migrations)
+      checkOrder(runNames, migrations.migrations)
     }
 
     const toRun: Migration[] = getMigrationsToRun(options, runNames, migrations)

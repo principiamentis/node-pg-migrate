@@ -15,6 +15,12 @@ import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOpt
 import { getMigrationTableSchema } from './utils'
 import { ColumnDefinitions } from '../operations/tablesTypes'
 
+interface MigrationVariantType {
+  migrations: string[]
+  next: string | null
+  reset: string | null
+}
+
 const { readdir } = fs.promises
 
 const SEPARATOR = '_'
@@ -23,8 +29,24 @@ export const loadMigrationFiles = async (dir: string) => {
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true })
   return dirContent
     .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
-    .filter((file): file is string => Boolean(file) && !/^reset.*$/.test(typeof file === 'string' ? file : '')) // TODO use object for split migrations/reset/next
-    .sort()
+    .reduce(
+      (acc: MigrationVariantType, file) => {
+        if (file !== null) {
+          if (/^reset.*$/.test(file)) {
+            acc.reset = file
+            return acc
+          }
+          if (/^next.*$/.test(file)) {
+            acc.next = file
+            return acc
+          }
+          acc.migrations.push(file)
+          acc.migrations.sort()
+        }
+        return acc
+      },
+      { migrations: [], next: null, reset: null },
+    )
 }
 
 const getSuffixFromFileName = (fileName: string) => path.extname(fileName).substr(1)
@@ -32,7 +54,9 @@ const getSuffixFromFileName = (fileName: string) => path.extname(fileName).subst
 const getLastSuffix = async (dir: string) => {
   try {
     const files = await loadMigrationFiles(dir)
-    return files.length > 0 ? getSuffixFromFileName(files[files.length - 1]) : undefined
+    return files.migrations.length > 0
+      ? getSuffixFromFileName(files.migrations[files.migrations.length - 1])
+      : undefined
   } catch (err) {
     return undefined
   }
@@ -143,6 +167,8 @@ export class Migration implements RunMigration {
 
   public down?: false | MigrationAction
 
+  public reset?: false | MigrationAction
+
   public readonly options: RunnerOption
 
   public readonly typeShorthands?: ColumnDefinitions
@@ -221,6 +247,10 @@ export class Migration implements RunMigration {
   _getAction(direction: MigrationDirection) {
     if (direction === 'down' && this.down === undefined) {
       this.down = this.up
+    }
+
+    if (direction === 'reset') {
+      this.reset = this.down
     }
 
     const action: MigrationAction | false | undefined = this[direction]

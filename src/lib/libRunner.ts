@@ -73,7 +73,8 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
         await runner(options('down'))
         await runner(options('up', Infinity))
       } else if (action === 'restore') {
-        await runner(options('up', Infinity))
+        await runner(options('reset'))
+        await runner(options('up'))
       } else {
         await runner(options(action))
       }
