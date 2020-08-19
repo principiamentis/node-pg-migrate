@@ -33,7 +33,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
         logger.info(err.stack)
         process.exit(1)
       })
-  } else if (action === 'up' || action === 'down' || action === 'redo' || action === 'restore') {
+  } else if (action === 'up' || action === 'down' || action === 'redo' || action === 'restore' || action === 'apply') {
     try {
       const dryRun = argv['dry-run']
       if (dryRun) {
@@ -44,16 +44,23 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
       const { fake } = argv
 
       const updownArg = argv._.length ? argv._[0] : null
+      const applyArg = argv._.length > 1 ? argv._[1] : null
       let numMigrations: number
       let migrationName: string
+      let migrationNameLast: string
 
       if (updownArg !== null) {
         // eslint-disable-next-line eqeqeq
         if (parseInt(updownArg, 10) == updownArg) {
           numMigrations = parseInt(updownArg, 10)
         } else {
-          migrationName = argv._.join('-').replace(/_ /g, '-')
+          // migrationName = argv._.join('-').replace(/_ /g, '-')
+          migrationName = updownArg
         }
+      }
+
+      if (applyArg !== null) {
+        migrationNameLast = applyArg
       }
 
       const options = (direction: MigrationDirection, _count?: number): RunnerOption => {
@@ -66,15 +73,18 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
           direction,
           fake,
           file: migrationName,
+          fileLast: migrationNameLast,
         }
       }
 
       if (action === 'redo') {
-        await runner(options('down'))
-        await runner(options('up', Infinity))
+        await runner(options('reset'))
+        await runner(options('applySnapshot'))
       } else if (action === 'restore') {
         await runner(options('reset'))
         await runner(options('up'))
+      } else if (action === 'apply') {
+        await runner(options('use'))
       } else {
         await runner(options(action))
       }
@@ -86,7 +96,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
       process.exit(1)
     }
   } else {
-    logger.info('Invalid Action: Must be [up|down|restore|create|redo].')
+    logger.info('Invalid Action: Must be [up|down|restore|apply|create|redo].')
     utils.showHelp()
     process.exit(1)
   }

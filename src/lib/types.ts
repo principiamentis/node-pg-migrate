@@ -192,7 +192,7 @@ export enum PgType { // eslint-disable-line import/prefer-default-export
   XML = 'xml', // XML data
 }
 
-export type MigrationDirection = 'up' | 'down' | 'reset'
+export type MigrationDirection = 'up' | 'down' | 'reset' | 'use' | 'applySnapshot'
 
 export type LogFn = (msg: string) => void
 export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn }
@@ -206,6 +206,7 @@ export interface RunnerOptionConfig {
   direction: MigrationDirection
   count: number
   file?: string
+  fileLast?: string
   dryRun?: boolean
   createMigrationsSchema?: boolean
   singleTransaction?: boolean

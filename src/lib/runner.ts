@@ -15,7 +15,7 @@ import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
 interface MigrationVariant {
   migrations: Migration[]
   next: Migration | null
-  reset: Migration | null
+  reset: Migration
 }
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
@@ -51,7 +51,7 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
         await Promise.all(files.migrations.map(async (file) => getMigration(db, options, logger, file)))
       ).sort((m1, m2) => m1.timestamp - m2.timestamp),
       next: files.next ? await getMigration(db, options, logger, files.next) : null,
-      reset: files.reset ? await getMigration(db, options, logger, files.reset) : null,
+      reset: await getMigration(db, options, logger, files.reset),
     }
   } catch (err) {
     throw new Error(`Can't get migration files: ${err.stack}`)
@@ -120,6 +120,14 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
 }
 
 const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: MigrationVariant): Migration[] => {
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
+  console.log(options.file)
+  console.log('##########################')
+  console.log(options.fileLast)
+  console.log('##########################')
+  console.log(runNames)
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
+
   if (options.direction === 'down') {
     const downMigrations: Array<string | Migration> = runNames
       .filter((migrationName) => !options.file || options.file === migrationName)
@@ -133,22 +141,84 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
     return toRun as Migration[]
   }
   if (options.direction === 'reset') {
-    const toRun = [migrations.reset]
-    return toRun as Migration[]
+    let toRun: Migration[]
+    if (options.file) {
+      const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
+
+      if (index < 0) {
+        toRun = []
+      } else {
+        toRun = [migrations.reset]
+      }
+    } else {
+      toRun = [migrations.reset]
+    }
+    return toRun
   }
 
-  let upMigrations
+  let upMigrations = migrations.migrations
 
-  if (options.file) {
-    const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
+  if (options.direction === 'use') {
+    if (options.file) {
+      const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
 
-    if (index < 0) {
-      throw new Error(`Definitions of migrations ${options.file} not exist.`)
+      upMigrations = allMigrations.filter(
+        ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
+      )
+
+      if (upMigrations.length) {
+        const indexOfFile = allMigrations.map((item) => item.name).indexOf(options.file)
+        const index = runNames.indexOf(allMigrations[indexOfFile - 1].name)
+
+        if (index < 0) {
+          throw new Error(`Not run migration "${options.file}" before previous migrations.`)
+        }
+
+        if (options.fileLast) {
+          const indexOfFileLast = allMigrations.map((item) => item.name).indexOf(options.fileLast)
+
+          if (indexOfFileLast < 0) {
+            upMigrations = migrations.migrations.slice(indexOfFile, migrations.migrations.length)
+          } else if (indexOfFileLast < indexOfFile) {
+            throw new Error(`Wrong order of range.`)
+          } else {
+            upMigrations = allMigrations.slice(indexOfFile, indexOfFileLast + 1)
+          }
+        }
+      }
+    } else {
+      const index = migrations.migrations.map((item) => item.name).indexOf(runNames[runNames.length - 1])
+      upMigrations = migrations.migrations.slice(index + 1, migrations.migrations.length)
     }
+  }
 
-    upMigrations = migrations.migrations.slice(0, index + 1)
-  } else {
-    upMigrations = migrations.migrations
+  if (options.direction === 'up') {
+    if (options.file) {
+      const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
+
+      if (index < 0) {
+        // throw new Error(`Definitions of migrations ${options.file} not exist.`)
+        upMigrations = []
+      } else {
+        upMigrations = migrations.migrations.slice(0, index + 1)
+      }
+    }
+  }
+
+  // TODO should be use snapshots for restoring of migrations
+  if (options.direction === 'applySnapshot') {
+    const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
+
+    if (options.file) {
+      const index = allMigrations.map((item) => item.name).indexOf(options.file)
+
+      if (index < 0) {
+        // throw new Error(`Definitions of migrations ${options.file} not exist.`)
+        upMigrations = []
+      } else {
+        upMigrations = allMigrations.slice(0, index + 1)
+      }
+    }
   }
 
   // upMigrations = migrations.migrations.filter(

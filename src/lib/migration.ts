@@ -18,7 +18,7 @@ import { ColumnDefinitions } from '../operations/tablesTypes'
 interface MigrationVariantType {
   migrations: string[]
   next: string | null
-  reset: string | null
+  reset: string
 }
 
 const { readdir } = fs.promises
@@ -45,7 +45,7 @@ export const loadMigrationFiles = async (dir: string) => {
         }
         return acc
       },
-      { migrations: [], next: null, reset: null },
+      { migrations: [], next: null, reset: 'reset.ts' },
     )
 }
 
@@ -169,6 +169,10 @@ export class Migration implements RunMigration {
 
   public reset?: false | MigrationAction
 
+  public use?: false | MigrationAction
+
+  public applySnapshot?: false | MigrationAction
+
   public readonly options: RunnerOption
 
   public readonly typeShorthands?: ColumnDefinitions
@@ -251,6 +255,14 @@ export class Migration implements RunMigration {
 
     if (direction === 'reset') {
       this.reset = this.down
+    }
+
+    if (direction === 'use') {
+      this.use = this.up
+    }
+
+    if (direction === 'applySnapshot') {
+      this.applySnapshot = this.up
     }
 
     const action: MigrationAction | false | undefined = this[direction]
