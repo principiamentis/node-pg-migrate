@@ -218,6 +218,8 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
       } else {
         upMigrations = allMigrations.slice(0, index + 1)
       }
+    } else {
+      upMigrations = allMigrations
     }
   }
 
