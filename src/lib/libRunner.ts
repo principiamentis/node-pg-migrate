@@ -44,23 +44,16 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
       const { fake } = argv
 
       const updownArg = argv._.length ? argv._[0] : null
-      const applyArg = argv._.length > 1 ? argv._[1] : null
       let numMigrations: number
       let migrationName: string
-      let migrationNameLast: string
 
       if (updownArg !== null) {
         // eslint-disable-next-line eqeqeq
         if (parseInt(updownArg, 10) == updownArg) {
           numMigrations = parseInt(updownArg, 10)
         } else {
-          // migrationName = argv._.join('-').replace(/_ /g, '-')
-          migrationName = updownArg
+          migrationName = argv._.join('-').replace(/_ /g, '-')
         }
-      }
-
-      if (applyArg !== null) {
-        migrationNameLast = applyArg
       }
 
       const options = (direction: MigrationDirection, _count?: number): RunnerOption => {
@@ -73,7 +66,6 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
           direction,
           fake,
           file: migrationName,
-          fileLast: migrationNameLast,
         }
       }
 

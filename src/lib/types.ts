@@ -206,7 +206,6 @@ export interface RunnerOptionConfig {
   direction: MigrationDirection
   count: number
   file?: string
-  fileLast?: string
   dryRun?: boolean
   createMigrationsSchema?: boolean
   singleTransaction?: boolean

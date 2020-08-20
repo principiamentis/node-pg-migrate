@@ -123,8 +123,6 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
   console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
   console.log(options.file)
   console.log('##########################')
-  console.log(options.fileLast)
-  console.log('##########################')
   console.log(runNames)
   console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
 
@@ -161,34 +159,11 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
   if (options.direction === 'use') {
     if (options.file) {
       const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
+      const indexOfFile = allMigrations.map((item) => item.name).indexOf(options.file)
 
-      upMigrations = allMigrations.filter(
-        ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
-      )
-
-      if (upMigrations.length) {
-        const indexOfFile = allMigrations.map((item) => item.name).indexOf(options.file)
-        const index = runNames.indexOf(allMigrations[indexOfFile - 1].name)
-
-        if (index < 0) {
-          throw new Error(`Not run migration "${options.file}" before previous migrations.`)
-        }
-
-        if (options.fileLast) {
-          const indexOfFileLast = allMigrations.map((item) => item.name).indexOf(options.fileLast)
-
-          if (indexOfFileLast < 0) {
-            upMigrations = migrations.migrations.slice(indexOfFile, migrations.migrations.length)
-          } else if (indexOfFileLast < indexOfFile) {
-            throw new Error(`Wrong order of range.`)
-          } else {
-            upMigrations = allMigrations.slice(indexOfFile, indexOfFileLast + 1)
-          }
-        }
-      }
+      upMigrations = allMigrations.filter(({ name }, index) => runNames.indexOf(name) < 0 && index <= indexOfFile)
     } else {
-      const index = migrations.migrations.map((item) => item.name).indexOf(runNames[runNames.length - 1])
-      upMigrations = migrations.migrations.slice(index + 1, migrations.migrations.length)
+      upMigrations = migrations.migrations.filter(({ name }) => runNames.indexOf(name) < 0)
     }
   }
 
@@ -197,7 +172,6 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
       const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
 
       if (index < 0) {
-        // throw new Error(`Definitions of migrations ${options.file} not exist.`)
         upMigrations = []
       } else {
         upMigrations = migrations.migrations.slice(0, index + 1)
