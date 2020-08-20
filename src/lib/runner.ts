@@ -27,9 +27,16 @@ const runOnColumn = 'run_on'
 
 const getMigration = (db: DBConnection, options: RunnerOption, logger: Logger, file: string) => {
   let shorthands: ColumnDefinitions = {}
+  let actions: MigrationBuilderActions
   const filePath = `${options.dir}/${file}`
-  // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
-  const actions: MigrationBuilderActions = require(path.relative(__dirname, filePath))
+  if (/^reset.*$/.test(file)) {
+    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
+    actions = { reset: require(path.relative(__dirname, filePath)).default }
+  } else {
+    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
+    actions = require(path.relative(__dirname, filePath))
+  }
+
   shorthands = { ...shorthands, ...actions.shorthands }
   return new Migration(
     db,
@@ -120,12 +127,6 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
 }
 
 const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: MigrationVariant): Migration[] => {
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
-  console.log(options.file)
-  console.log('##########################')
-  console.log(runNames)
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
-
   if (options.direction === 'down') {
     const downMigrations: Array<string | Migration> = runNames
       .filter((migrationName) => !options.file || options.file === migrationName)

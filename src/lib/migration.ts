@@ -182,7 +182,7 @@ export class Migration implements RunMigration {
   constructor(
     db: DBConnection,
     migrationPath: string,
-    { up, down }: MigrationBuilderActions,
+    { up, down, reset }: MigrationBuilderActions,
     options: RunnerOption,
     typeShorthands?: ColumnDefinitions,
     logger: Logger = console,
@@ -193,6 +193,7 @@ export class Migration implements RunMigration {
     this.timestamp = getTimestamp(logger, this.name)
     this.up = up
     this.down = down
+    this.reset = reset
     this.options = options
     this.typeShorthands = typeShorthands
     this.logger = logger
@@ -209,6 +210,9 @@ export class Migration implements RunMigration {
       case this.up:
         this.logger.info(`### MIGRATION ${this.name} (UP) ###`)
         return `INSERT INTO "${schema}"."${migrationsTable}" (name, run_on) VALUES ('${name}', NOW());`
+      case this.reset:
+        this.logger.info(`### Clear database (RESET) ###`)
+        return `DELETE FROM "${schema}"."${migrationsTable}";`
       default:
         throw new Error('Unknown direction')
     }
@@ -253,10 +257,6 @@ export class Migration implements RunMigration {
       this.down = this.up
     }
 
-    if (direction === 'reset') {
-      this.reset = this.down
-    }
-
     if (direction === 'use') {
       this.use = this.up
     }
@@ -284,7 +284,7 @@ export class Migration implements RunMigration {
     const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize))
     const action = this._getAction(direction)
 
-    if (this.down === this.up) {
+    if (this.down === this.up && !this.reset) {
       // automatically infer the down migration by running the up migration in reverse mode...
       pgm.enableReverseMode()
     }

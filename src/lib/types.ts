@@ -121,6 +121,7 @@ export type Literal = (v: Name) => string
 export interface MigrationBuilderActions {
   up?: MigrationAction | false
   down?: MigrationAction | false
+  reset?: MigrationAction | false
   shorthands?: tables.ColumnDefinitions
 }
 

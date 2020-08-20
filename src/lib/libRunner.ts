@@ -33,7 +33,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
         logger.info(err.stack)
         process.exit(1)
       })
-  } else if (action === 'up' || action === 'down' || action === 'redo' || action === 'restore' || action === 'apply') {
+  } else if (action === 'redo' || action === 'restore' || action === 'apply') {
     try {
       const dryRun = argv['dry-run']
       if (dryRun) {
@@ -88,7 +88,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
       process.exit(1)
     }
   } else {
-    logger.info('Invalid Action: Must be [up|down|restore|apply|create|redo].')
+    logger.info('Invalid Action: Must be [restore|apply|create|redo].')
     utils.showHelp()
     process.exit(1)
   }
