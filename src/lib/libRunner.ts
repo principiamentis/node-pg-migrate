@@ -7,13 +7,14 @@ const MIGRATIONS_FILE_LANGUAGE = 'ts'
 interface Utils {
   showHelp: (consoleLevel?: string) => void
   format: (format: any, ...param: any[]) => string
+  createDump: (versionOfMigration: string, connectionUrl: string) => Promise<void>
+  restoreDB: (versionOfMigration: string, connectionUrl: string) => Promise<void>
+  compareSnapshots: (versionOfMigration: string, connectionUrl: string) => Promise<void>
 }
 
-export default async (argv: any, utils: Utils, config: RunnerOption): Promise<void> => {
+export default async (argv: any, utils: Utils, config: RunnerOption, URL: string): Promise<void> => {
   const action = argv._.shift()
   const { dir, logger } = config
-
-  // logger.info('New libRunner.')
 
   if (action === 'create') {
     // replaces spaces with dashes - should help fix some errors
@@ -33,7 +34,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
         logger.info(err.stack)
         process.exit(1)
       })
-  } else if (action === 'redo' || action === 'restore' || action === 'apply') {
+  } else if (['redo', 'restore', 'apply', 'dump', 'compare'].includes(action)) {
     try {
       const dryRun = argv['dry-run']
       if (dryRun) {
@@ -45,7 +46,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
 
       const updownArg = argv._.length ? argv._[0] : null
       let numMigrations: number
-      let migrationName: string
+      let migrationName = ''
 
       if (updownArg !== null) {
         // eslint-disable-next-line eqeqeq
@@ -69,14 +70,28 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
         }
       }
 
+      if (['redo', 'dump', 'compare'].includes(action) && !migrationName) {
+        console.log("'migrationName' is required.")
+        utils.showHelp()
+        process.exit(1)
+      }
+
       if (action === 'redo') {
-        await runner(options('reset'))
-        await runner(options('applySnapshot'))
+        if (migrationName === 'next') {
+          await runner(options('reset'))
+          await runner(options('applyNext'))
+        } else {
+          await utils.restoreDB(migrationName, URL)
+        }
       } else if (action === 'restore') {
         await runner(options('reset'))
         await runner(options('up'))
       } else if (action === 'apply') {
         await runner(options('use'))
+      } else if (action === 'dump') {
+        await utils.createDump(migrationName, URL)
+      } else if (action === 'compare') {
+        await utils.compareSnapshots(migrationName, URL)
       } else {
         await runner(options(action))
       }
@@ -88,7 +103,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption): Promise<vo
       process.exit(1)
     }
   } else {
-    logger.info('Invalid Action: Must be [restore|apply|create|redo].')
+    logger.info('Invalid Action: Must be [restore|apply|create|redo|dump|compare].')
     utils.showHelp()
     process.exit(1)
   }

@@ -180,22 +180,23 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
     }
   }
 
-  // TODO should be use snapshots for restoring of migrations
-  if (options.direction === 'applySnapshot') {
-    const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
+  if (options.direction === 'applyNext') {
+    // const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
+    //
+    // if (options.file) {
+    //   const index = allMigrations.map((item) => item.name).indexOf(options.file)
+    //
+    //   if (index < 0) {
+    //     // throw new Error(`Definitions of migrations ${options.file} not exist.`)
+    //     upMigrations = []
+    //   } else {
+    //     upMigrations = allMigrations.slice(0, index + 1)
+    //   }
+    // } else {
+    //   upMigrations = allMigrations
+    // }
 
-    if (options.file) {
-      const index = allMigrations.map((item) => item.name).indexOf(options.file)
-
-      if (index < 0) {
-        // throw new Error(`Definitions of migrations ${options.file} not exist.`)
-        upMigrations = []
-      } else {
-        upMigrations = allMigrations.slice(0, index + 1)
-      }
-    } else {
-      upMigrations = allMigrations
-    }
+    upMigrations = migrations.next ? [migrations.next] : []
   }
 
   // upMigrations = migrations.migrations.filter(
