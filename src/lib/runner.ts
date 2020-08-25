@@ -181,31 +181,8 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
   }
 
   if (options.direction === 'applyNext') {
-    // const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
-    //
-    // if (options.file) {
-    //   const index = allMigrations.map((item) => item.name).indexOf(options.file)
-    //
-    //   if (index < 0) {
-    //     // throw new Error(`Definitions of migrations ${options.file} not exist.`)
-    //     upMigrations = []
-    //   } else {
-    //     upMigrations = allMigrations.slice(0, index + 1)
-    //   }
-    // } else {
-    //   upMigrations = allMigrations
-    // }
-
     upMigrations = migrations.next ? [migrations.next] : []
   }
-
-  // upMigrations = migrations.migrations.filter(
-  //   ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
-  // )
-
-  // console.log('########################')
-  // console.log(upMigrations)
-  // console.log('########################')
 
   return upMigrations.slice(0, Math.abs(options.count === undefined ? Infinity : options.count))
 }

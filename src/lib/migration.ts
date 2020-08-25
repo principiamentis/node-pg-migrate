@@ -171,7 +171,7 @@ export class Migration implements RunMigration {
 
   public use?: false | MigrationAction
 
-  public applySnapshot?: false | MigrationAction
+  public applyNext?: false | MigrationAction
 
   public readonly options: RunnerOption
 
@@ -261,8 +261,8 @@ export class Migration implements RunMigration {
       this.use = this.up
     }
 
-    if (direction === 'applySnapshot') {
-      this.applySnapshot = this.up
+    if (direction === 'applyNext') {
+      this.applyNext = this.up
     }
 
     const action: MigrationAction | false | undefined = this[direction]

@@ -12,9 +12,19 @@ interface Utils {
   compareSnapshots: (versionOfMigration: string, connectionUrl: string) => Promise<void>
 }
 
-export default async (argv: any, utils: Utils, config: RunnerOption, URL: string): Promise<void> => {
+interface LibRunnerOptions {
+  migrationOption: RunnerOption
+  snapshotOptions: {
+    URL: string
+    snapshotName: string
+  }
+}
+
+export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promise<void> => {
   const action = argv._.shift()
-  const { dir, logger } = config
+  const { migrationOption, snapshotOptions } = config
+  const { dir, logger } = migrationOption
+  const { URL, snapshotName } = snapshotOptions
 
   if (action === 'create') {
     // replaces spaces with dashes - should help fix some errors
@@ -60,7 +70,7 @@ export default async (argv: any, utils: Utils, config: RunnerOption, URL: string
       const options = (direction: MigrationDirection, _count?: number): RunnerOption => {
         const count = _count === undefined ? numMigrations : _count
         return {
-          ...config,
+          ...migrationOption,
           dryRun,
           count,
           singleTransaction,
@@ -70,18 +80,20 @@ export default async (argv: any, utils: Utils, config: RunnerOption, URL: string
         }
       }
 
-      if (['redo', 'dump', 'compare'].includes(action) && !migrationName) {
-        console.log("'migrationName' is required.")
+      if (['dump', 'compare'].includes(action) && !migrationName) {
+        logger.info("'migrationName' is required.")
         utils.showHelp()
         process.exit(1)
       }
 
       if (action === 'redo') {
         if (migrationName === 'next') {
-          await runner(options('reset'))
+          await utils.restoreDB(snapshotName, URL)
           await runner(options('applyNext'))
+        } else if (!migrationName) {
+          await utils.restoreDB(snapshotName, URL)
         } else {
-          await utils.restoreDB(migrationName, URL)
+          await utils.restoreDB(migrationName.replace(/\s/g, '_'), URL)
         }
       } else if (action === 'restore') {
         await runner(options('reset'))
