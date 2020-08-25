@@ -1,5 +1,5 @@
 import path from 'path'
-import Db, { DBConnection } from './db'
+import Db, { DBConnection } from '../db'
 import { ColumnDefinitions } from '../operations/tablesTypes'
 import { Migration, loadMigrationFiles, RunMigration } from './migration'
 import {
@@ -127,45 +127,22 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
 }
 
 const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: MigrationVariant): Migration[] => {
-  if (options.direction === 'down') {
-    const downMigrations: Array<string | Migration> = runNames
-      .filter((migrationName) => !options.file || options.file === migrationName)
-      .map((migrationName) => migrations.migrations.find(({ name }) => name === migrationName) || migrationName)
-    const toRun = downMigrations.slice(-Math.abs(options.count === undefined ? 1 : options.count)).reverse()
-    const deletedMigrations = toRun.filter((migration): migration is string => typeof migration === 'string')
-    if (deletedMigrations.length) {
-      const deletedMigrationsStr = deletedMigrations.join(', ')
-      throw new Error(`Definitions of migrations ${deletedMigrationsStr} have been deleted.`)
-    }
-    return toRun as Migration[]
-  }
   if (options.direction === 'reset') {
-    let toRun: Migration[]
-    if (options.file) {
-      const index = migrations.migrations.map((item) => item.name).indexOf(options.file)
-
-      if (index < 0) {
-        toRun = []
-      } else {
-        toRun = [migrations.reset]
-      }
-    } else {
-      toRun = [migrations.reset]
-    }
-    return toRun
+    return !options.file || migrations.migrations.map((item) => item.name).includes(options.file)
+      ? [migrations.reset]
+      : []
   }
 
   let upMigrations = migrations.migrations
 
   if (options.direction === 'use') {
-    if (options.file) {
-      const allMigrations = migrations.next ? [...migrations.migrations, migrations.next] : migrations.migrations
-      const indexOfFile = allMigrations.map((item) => item.name).indexOf(options.file)
+    const allMigrations =
+      migrations.next && options.file ? [...migrations.migrations, migrations.next] : migrations.migrations
+    const indexOfFile = allMigrations.map((item) => item.name).indexOf(options.file || '')
 
-      upMigrations = allMigrations.filter(({ name }, index) => runNames.indexOf(name) < 0 && index <= indexOfFile)
-    } else {
-      upMigrations = migrations.migrations.filter(({ name }) => runNames.indexOf(name) < 0)
-    }
+    upMigrations = allMigrations.filter(
+      ({ name }, index) => runNames.indexOf(name) < 0 && (options.file ? index <= indexOfFile : true),
+    )
   }
 
   if (options.direction === 'up') {
