@@ -7,7 +7,7 @@ const MIGRATIONS_FILE_LANGUAGE = 'ts'
 interface Utils {
   showHelp: (consoleLevel?: string) => void
   format: (format: any, ...param: any[]) => string
-  createDump: (versionOfMigration: string, connectionUrl: string) => Promise<void>
+  createDump: (connectionUrl: string) => Promise<void>
   restoreDB: (versionOfMigration: string, connectionUrl: string) => Promise<void>
   compareSnapshots: (versionOfMigration: string, connectionUrl: string) => Promise<void>
 }
@@ -80,7 +80,7 @@ export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promis
         }
       }
 
-      if (['dump', 'compare'].includes(action) && !migrationName) {
+      if (action === 'compare' && !migrationName) {
         logger.info("'migrationName' is required.")
         utils.showHelp()
         process.exit(1)
@@ -101,7 +101,7 @@ export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promis
       } else if (action === 'apply') {
         await runner(options('use'))
       } else if (action === 'dump') {
-        await utils.createDump(migrationName, URL)
+        await utils.createDump(URL)
       } else if (action === 'compare') {
         await utils.compareSnapshots(migrationName, URL)
       } else {
