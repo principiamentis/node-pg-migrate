@@ -7,15 +7,14 @@ const MIGRATIONS_FILE_LANGUAGE = 'ts'
 interface Utils {
   showHelp: (consoleLevel?: string) => void
   format: (format: any, ...param: any[]) => string
-  createDump: (connectionUrl: string) => Promise<void>
-  restoreDB: (versionOfMigration: string, connectionUrl: string) => Promise<void>
-  compareSnapshots: (versionOfMigration: string, connectionUrl: string) => Promise<void>
+  createDump: () => Promise<void>
+  restoreDB: (versionOfMigration: string) => Promise<void>
+  compareSnapshots: (versionOfMigration: string) => Promise<void>
 }
 
 interface LibRunnerOptions {
   migrationOption: RunnerOption
   snapshotOptions: {
-    URL: string
     snapshotName: string
   }
 }
@@ -24,7 +23,7 @@ export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promis
   const action = argv._.shift()
   const { migrationOption, snapshotOptions } = config
   const { dir, logger } = migrationOption
-  const { URL, snapshotName } = snapshotOptions
+  const { snapshotName } = snapshotOptions
 
   if (action === 'create') {
     // replaces spaces with dashes - should help fix some errors
@@ -88,12 +87,12 @@ export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promis
 
       if (action === 'redo') {
         if (migrationName === 'next') {
-          await utils.restoreDB(snapshotName, URL)
+          await utils.restoreDB(snapshotName)
           await runner(options('applyNext'))
         } else if (!migrationName) {
-          await utils.restoreDB(snapshotName, URL)
+          await utils.restoreDB(snapshotName)
         } else {
-          await utils.restoreDB(migrationName.replace(/\s/g, '_'), URL)
+          await utils.restoreDB(migrationName.replace(/\s/g, '_'))
         }
       } else if (action === 'restore') {
         await runner(options('reset'))
@@ -101,9 +100,9 @@ export default async (argv: any, utils: Utils, config: LibRunnerOptions): Promis
       } else if (action === 'apply') {
         await runner(options('use'))
       } else if (action === 'dump') {
-        await utils.createDump(URL)
+        await utils.createDump()
       } else if (action === 'compare') {
-        await utils.compareSnapshots(migrationName, URL)
+        await utils.compareSnapshots(migrationName)
       } else {
         await runner(options(action))
       }
