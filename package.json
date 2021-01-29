@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "version": "5.9.0",
+  "version": "5.9.1",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
   "contributors": [
