@@ -1,12 +1,15 @@
-const { expect } = require('chai')
-const Functions = require('../src/operations/functions')
-const { options1, options2 } = require('./utils')
+import { expect } from 'chai'
+import * as Functions from '../src/operations/functions'
+import { FunctionParam } from '../src/operations/functionsTypes'
+import { options1, options2 } from './utils'
 
 describe('src/operations/functions', () => {
-  const params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }]
+  const params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }] as FunctionParam[]
   describe('.create', () => {
     it('throws on missing language', () => {
-      expect(() => Functions.createFunction(options1)({ schema: 'mySchema', name: 'f' }, [])).to.throw()
+      expect(() =>
+        Functions.createFunction(options1)({ schema: 'mySchema', name: 'f' }, [], {} as { language: string }, ''),
+      ).to.throw()
     })
 
     it('check schemas can be used', () => {
@@ -21,25 +24,25 @@ describe('src/operations/functions', () => {
         `BEGIN
   return $1 + arg2;
 END;`,
-      ]
+      ] as const
       const sql1 = Functions.createFunction(options1)(...args)
       const sql2 = Functions.createFunction(options2)(...args)
       expect(sql1).to.equal(
         `CREATE FUNCTION "mySchema"."f"(integer, in "arg2" integer)
   RETURNS integer
   LANGUAGE plpgsql
-  AS $pg1$BEGIN
+  AS $pga$BEGIN
   return $1 + arg2;
-END;$pg1$
+END;$pga$
   CALLED ON NULL INPUT;`,
       )
       expect(sql2).to.equal(
         `CREATE FUNCTION "my_schema"."f"(integer, in "arg2" integer)
   RETURNS integer
   LANGUAGE plpgsql
-  AS $pg1$BEGIN
+  AS $pga$BEGIN
   return $1 + arg2;
-END;$pg1$
+END;$pga$
   CALLED ON NULL INPUT;`,
       )
     })
@@ -55,14 +58,14 @@ END;$pg1$
           strict: true,
         },
         `SELECT $1 + arg2;`,
-      ]
+      ] as const
       const sql1 = Functions.createFunction(options1)(...args)
       const sql2 = Functions.createFunction(options2)(...args)
       expect(sql1).to.equal(
         `CREATE FUNCTION "mySchema"."f"(integer, IN arg2 integer)
   RETURNS integer
   LANGUAGE sql
-  AS $pg1$SELECT $1 + arg2;$pg1$
+  AS $pga$SELECT $1 + arg2;$pga$
   IMMUTABLE
   RETURNS NULL ON NULL INPUT;`,
       )
@@ -70,7 +73,7 @@ END;$pg1$
         `CREATE FUNCTION "my_schema"."f"(integer, IN arg2 integer)
   RETURNS integer
   LANGUAGE sql
-  AS $pg1$SELECT $1 + arg2;$pg1$
+  AS $pga$SELECT $1 + arg2;$pga$
   IMMUTABLE
   RETURNS NULL ON NULL INPUT;`,
       )
@@ -96,7 +99,7 @@ END;$pg1$
         `CREATE FUNCTION "myFunction"(a integer, b real)
   RETURNS integer
   LANGUAGE plpgsql
-  AS $pg1$blah-blubb$pg1$
+  AS $pga$blah-blubb$pga$
   STABLE
   RETURNS NULL ON NULL INPUT
   SECURITY DEFINER
@@ -118,26 +121,26 @@ END;$pg1$
           comment: `it does addition\nwith special characters ("')!`,
         },
         `SELECT a + b;`,
-      ]
+      ] as const
       const sql1 = Functions.createFunction(options1)(...args)
       const sql2 = Functions.createFunction(options2)(...args)
       expect(sql1).to.equal(
         `CREATE OR REPLACE FUNCTION "mySchema"."otherFunction"(a integer, b integer)
   RETURNS integer
   LANGUAGE sql
-  AS $pg1$SELECT a + b;$pg1$
+  AS $pga$SELECT a + b;$pga$
   IMMUTABLE;
-COMMENT ON FUNCTION "mySchema"."otherFunction"(a integer, b integer) IS $pg1$it does addition
-with special characters ("')!$pg1$;`,
+COMMENT ON FUNCTION "mySchema"."otherFunction"(a integer, b integer) IS $pga$it does addition
+with special characters ("')!$pga$;`,
       )
       expect(sql2).to.equal(
         `CREATE OR REPLACE FUNCTION "my_schema"."other_function"(a integer, b integer)
   RETURNS integer
   LANGUAGE sql
-  AS $pg1$SELECT a + b;$pg1$
+  AS $pga$SELECT a + b;$pga$
   IMMUTABLE;
-COMMENT ON FUNCTION "my_schema"."other_function"(a integer, b integer) IS $pg1$it does addition
-with special characters ("')!$pg1$;`,
+COMMENT ON FUNCTION "my_schema"."other_function"(a integer, b integer) IS $pga$it does addition
+with special characters ("')!$pga$;`,
       )
     })
   })
@@ -155,7 +158,7 @@ with special characters ("')!$pg1$;`,
           cost: 1000,
           rows: 1,
         },
-      ]
+      ] as const
       const sql1 = Functions.alterFunction(options1)(...args)
       const sql2 = Functions.alterFunction(options2)(...args)
       expect(sql1).to.equal(
@@ -208,7 +211,7 @@ ALTER FUNCTION "myFunction"(something)
       expect(sql1).to.equal(
         `ALTER FUNCTION "myFunction"(something)
   CALLED ON NULL INPUT;
-COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;`,
+COMMENT ON FUNCTION "myFunction"(something) IS $pga$deals with null values$pga$;`,
       )
       const sql2 = Functions.alterFunction(options2)('myFunction', ['something', 'custom'], {
         comment: null,
@@ -220,7 +223,11 @@ COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;
   describe('.rename', () => {
     it('handles all input formats', () => {
       {
-        const args = [{ schema: 'mySchema', name: 'myF' }, ['integer', 'custom'], { schema: 'mySchema', name: 'myG' }]
+        const args = [
+          { schema: 'mySchema', name: 'myF' },
+          ['integer', 'custom'],
+          { schema: 'mySchema', name: 'myG' },
+        ] as const
         const sql1 = Functions.renameFunction(options1)(...args)
         const sql2 = Functions.renameFunction(options2)(...args)
         expect(sql1).to.equal('ALTER FUNCTION "mySchema"."myF"(integer, custom) RENAME TO "myG";')
@@ -235,7 +242,7 @@ COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;
         expect(sql).to.equal('ALTER FUNCTION "my_schema"."my_f"(integer, custom) RENAME TO "my_g";')
       }
       {
-        const args = ['myF', ['integer', 'custom'], 'myG']
+        const args = ['myF', ['integer', 'custom'], 'myG'] as const
         const sql1 = Functions.renameFunction(options1)(...args)
         const sql2 = Functions.renameFunction(options2)(...args)
         expect(sql1).to.equal('ALTER FUNCTION "myF"(integer, custom) RENAME TO "myG";')
@@ -244,7 +251,11 @@ COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;
     })
 
     it('can change schemas', () => {
-      const args = [{ schema: 'oldSchema', name: 'myF' }, ['integer', 'custom'], { schema: 'newSchema', name: 'myF' }]
+      const args = [
+        { schema: 'oldSchema', name: 'myF' },
+        ['integer', 'custom'],
+        { schema: 'newSchema', name: 'myF' },
+      ] as const
       const sql1 = Functions.renameFunction(options1)(...args)
       const sql2 = Functions.renameFunction(options2)(...args)
       expect(sql1).to.equal('ALTER FUNCTION "oldSchema"."myF"(integer, custom) SET SCHEMA "newSchema";')
@@ -252,7 +263,11 @@ COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;
     })
 
     it('can change both schema and name', () => {
-      const args = [{ schema: 'oldSchema', name: 'myF' }, ['integer', 'custom'], { schema: 'newSchema', name: 'myG' }]
+      const args = [
+        { schema: 'oldSchema', name: 'myF' },
+        ['integer', 'custom'],
+        { schema: 'newSchema', name: 'myG' },
+      ] as const
       const sql1 = Functions.renameFunction(options1)(...args)
       const sql2 = Functions.renameFunction(options2)(...args)
       expect(sql1).to.equal(

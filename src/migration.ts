@@ -17,6 +17,30 @@ import { ColumnDefinitions } from './operations/tablesTypes'
 
 const { readdir } = fs.promises
 
+export interface RunMigration {
+  readonly path: string
+  readonly name: string
+  readonly timestamp: number
+}
+
+export enum FilenameFormat {
+  timestamp = 'timestamp',
+  utc = 'utc',
+}
+
+export interface CreateOptionsTemplate {
+  templateFileName: string
+}
+
+export interface CreateOptionsDefault {
+  language?: 'js' | 'ts' | 'sql'
+  ignorePattern?: string
+}
+
+export type CreateOptions = {
+  filenameFormat?: FilenameFormat
+} & (CreateOptionsTemplate | CreateOptionsDefault)
+
 const SEPARATOR = '_'
 
 export const loadMigrationFiles = async (dir: string, ignorePattern?: string) => {
@@ -65,30 +89,6 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
 
 const resolveSuffix = async (directory: string, { language, ignorePattern }: CreateOptionsDefault) =>
   language || (await getLastSuffix(directory, ignorePattern)) || 'js'
-
-export interface RunMigration {
-  readonly path: string
-  readonly name: string
-  readonly timestamp: number
-}
-
-export enum FilenameFormat {
-  timestamp = 'timestamp',
-  utc = 'utc',
-}
-
-export interface CreateOptionsTemplate {
-  templateFileName: string
-}
-
-export interface CreateOptionsDefault {
-  language?: 'js' | 'ts' | 'sql'
-  ignorePattern?: string
-}
-
-export type CreateOptions = {
-  filenameFormat?: FilenameFormat
-} & (CreateOptionsTemplate | CreateOptionsDefault)
 
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
@@ -192,7 +192,7 @@ export class Migration implements RunMigration {
 
   async _apply(action: MigrationAction, pgm: MigrationBuilder) {
     if (action.length === 2) {
-      await new Promise((resolve) => action(pgm, resolve))
+      await new Promise<void>((resolve) => action(pgm, resolve))
     } else {
       await action(pgm)
     }
@@ -245,7 +245,7 @@ export class Migration implements RunMigration {
   }
 
   apply(direction: MigrationDirection) {
-    const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize))
+    const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize), this.logger)
     const action = this._getAction(direction)
 
     if (this.down === this.up) {

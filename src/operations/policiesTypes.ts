@@ -1,7 +1,7 @@
 import { Name, IfExistsOption } from './generalTypes'
 
 export interface PolicyOptions {
-  role?: string | string[]
+  role?: string | readonly string[]
   using?: string
   check?: string
   comment?: string | null

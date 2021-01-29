@@ -1,5 +1,59 @@
 # Change Log
 
+## [5.9.0](2020-11-04)
+
+### Added
+
+- Allow expanding dotenv with dotenv-expand [#712](https://github.com/salsita/node-pg-migrate/pull/712)
+
+## [5.8.1](2020-10-12)
+
+### Fixed
+
+- Fix sequence generated [#706](https://github.com/salsita/node-pg-migrate/pull/706)
+
+## [5.8.0](2020-09-24)
+
+### Fixed
+
+- Using string ids for Dollar-string escaping [#698](https://github.com/salsita/node-pg-migrate/pull/698)
+
+## [5.7.1](2020-09-22)
+
+### Fixed
+
+- Handle string params in backward compatible way [#696](https://github.com/salsita/node-pg-migrate/pull/696)
+
+## [5.7.0](2020-09-21)
+
+### Added
+
+- `pgm.sql` can also accept `PgLiteral`, `number`, `boolean`, `null`, `array` [#695](https://github.com/salsita/node-pg-migrate/pull/695)
+
+## [5.6.0](2020-08-19)
+
+### Added
+
+- PgLiteral can be serialized [#678](https://github.com/salsita/node-pg-migrate/pull/678)
+
+## [5.5.1](2020-08-18)
+
+### Fixed
+
+- Do not try to unlock DB if connection failed [#677](https://github.com/salsita/node-pg-migrate/pull/677)
+
+## [5.5.0](2020-08-10)
+
+### Changed
+
+- Allow opclass and sort per column in indexes [#671](https://github.com/salsita/node-pg-migrate/pull/671)
+
+## [5.4.0](2020-08-05)
+
+### Changed
+
+- Update isExternalClient check [#664](https://github.com/salsita/node-pg-migrate/pull/664)
+
 ## [5.3.0](2020-07-13)
 
 ### Added

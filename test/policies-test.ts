@@ -1,18 +1,18 @@
-const { expect } = require('chai')
-const Policies = require('../src/operations/policies')
-const { options1, options2 } = require('./utils')
+import { expect } from 'chai'
+import * as Policies from '../src/operations/policies'
+import { options1, options2 } from './utils'
 
 describe('src/operations/policies', () => {
   describe('.create', () => {
     it('check defaults', () => {
-      const args = [{ schema: 'mySchema', name: 'myTableName' }, 'getIn']
+      const args = [{ schema: 'mySchema', name: 'myTableName' }, 'getIn'] as const
       const sql1 = Policies.createPolicy(options1)(...args)
       const sql2 = Policies.createPolicy(options2)(...args)
       expect(sql1).to.equal('CREATE POLICY "getIn" ON "mySchema"."myTableName" FOR ALL TO PUBLIC;')
       expect(sql2).to.equal('CREATE POLICY "get_in" ON "my_schema"."my_table_name" FOR ALL TO PUBLIC;')
     })
     it('can be restrictive', () => {
-      const args = [{ schema: 'my_schema', name: 'my_tablename' }, 'get_out', { restrictive: true }]
+      const args = [{ schema: 'my_schema', name: 'my_tablename' }, 'get_out', { restrictive: true }] as const
       const sql1 = Policies.createPolicy(options1)(...args)
       const sql2 = Policies.createPolicy(options2)(...args)
       expect(sql1).to.equal('CREATE POLICY "get_out" ON "my_schema"."my_tablename" AS RESTRICTIVE FOR ALL TO PUBLIC;')
@@ -30,11 +30,11 @@ describe('src/operations/policies', () => {
           check: 'curious.function(column)',
           comment: 'is a sample',
         },
-      ]
+      ] as const
       const sql = Policies.createPolicy(options1)(...args)
       expect(sql).to.equal(
         `CREATE POLICY "my_allowance" ON "my_tablename" AS PERMISSIVE FOR UPDATE TO SESSION_USER, the_user USING (crazy_expression) WITH CHECK (curious.function(column));
-COMMENT ON POLICY "my_allowance" ON "my_tablename" IS $pg1$is a sample$pg1$;`,
+COMMENT ON POLICY "my_allowance" ON "my_tablename" IS $pga$is a sample$pga$;`,
       )
     })
   })
@@ -47,7 +47,7 @@ COMMENT ON POLICY "my_allowance" ON "my_tablename" IS $pg1$is a sample$pg1$;`,
         {
           role: 'PUBLIC',
         },
-      ]
+      ] as const
       const sql = Policies.alterPolicy(options2)(...args)
       expect(sql).to.equal('ALTER POLICY "my_allowance" ON "my_tablename" TO PUBLIC;')
     })

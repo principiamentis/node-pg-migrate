@@ -1,7 +1,8 @@
 import { expect } from 'chai'
-import { escapeValue, applyType } from '../src/utils'
+import { escapeValue, applyType, createSchemalize, createTransformer, StringIdGenerator } from '../src/utils'
 import { ColumnDefinitions } from '../src/operations/tablesTypes'
 import PgLiteral from '../src/operations/PgLiteral'
+import { PgLiteralValue } from '../src/operations/generalTypes'
 
 describe('src/utils', () => {
   describe('.escapeValue', () => {
@@ -20,7 +21,7 @@ describe('src/utils', () => {
     it('escape string', () => {
       const value = '#escape_me'
 
-      expect(escapeValue(value)).to.equal('$pg1$#escape_me$pg1$')
+      expect(escapeValue(value)).to.equal('$pga$#escape_me$pga$')
     })
 
     it('keep number as is', () => {
@@ -34,13 +35,26 @@ describe('src/utils', () => {
       const value2 = [['a'], ['b']]
 
       expect(escapeValue(value)).to.equal('ARRAY[[1],[2]]')
-      expect(escapeValue(value2)).to.equal('ARRAY[[$pg1$a$pg1$],[$pg1$b$pg1$]]')
+      expect(escapeValue(value2)).to.equal('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]')
     })
 
     it('parse PgLiteral to unescaped string', () => {
       const value = PgLiteral.create('@l|<e')
 
       expect(escapeValue(value)).to.equal('@l|<e')
+    })
+
+    it('parse object literal to unescaped string', () => {
+      const value: PgLiteralValue = { literal: true, value: '@l|<e' }
+
+      expect(escapeValue(value)).to.equal('@l|<e')
+    })
+
+    it('PgLiteral serialize to PgLiteralValue', () => {
+      const value = PgLiteral.create('@l|<e')
+      const literalValue = JSON.parse(JSON.stringify(value))
+
+      expect(escapeValue(literalValue)).to.equal('@l|<e')
     })
 
     it('parse unexpected type to empty string', () => {
@@ -85,6 +99,76 @@ describe('src/utils', () => {
         user: { type: `ref`, references: `users` },
       }
       expect(() => applyType('user', shorthands)).to.throw()
+    })
+  })
+
+  describe('.createTransformer', () => {
+    it('handle string and Name', () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('CREATE INDEX {string} ON {name} (id);', {
+          string: 'string',
+          name: { schema: 'schema', name: 'name' },
+        }),
+      ).to.equal('CREATE INDEX "string" ON "schema"."name" (id);')
+    })
+
+    it('Do not escape PgLiteral', () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('INSERT INTO s (id) VALUES {values};', {
+          values: new PgLiteral(['s1', 's2'].map((e) => `('${e}')`).join(', ')),
+        }),
+      ).to.equal("INSERT INTO s (id) VALUES ('s1'), ('s2');")
+    })
+
+    it('Can use number', () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('INSERT INTO s (id) VALUES ({values});', {
+          values: 1,
+        }),
+      ).to.equal('INSERT INTO s (id) VALUES (1);')
+    })
+  })
+
+  describe('.StringIdGenerator', () => {
+    it('generates correct sequence', () => {
+      const chars = 'abcd'
+
+      const ids = new StringIdGenerator(chars)
+      const results = [
+        'a',
+        'b',
+        'c',
+        'd',
+        'aa',
+        'ab',
+        'ac',
+        'ad',
+        'ba',
+        'bb',
+        'bc',
+        'bd',
+        'ca',
+        'cb',
+        'cc',
+        'cd',
+        'da',
+        'db',
+        'dc',
+        'dd',
+        'aaa',
+        'aab',
+        'aac',
+        'aad',
+      ]
+      results.forEach((res) => {
+        expect(ids.next()).to.equal(res)
+      })
     })
   })
 })

@@ -4,7 +4,7 @@ import { escapeValue } from '../utils'
 import { createFunction, dropFunction } from './functions'
 import { Name, DropOptions, Value } from './generalTypes'
 import { CreateTrigger, DropTrigger, RenameTrigger, TriggerOptions } from './triggersTypes'
-import { FunctionOptions } from './functionsTypes'
+import { CreateFunctionOptions } from './functionsTypes'
 
 export { CreateTrigger, DropTrigger, RenameTrigger }
 
@@ -24,7 +24,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   const _create: CreateTrigger = (
     tableName: Name,
     triggerName: string,
-    triggerOptions: (TriggerOptions & DropOptions) | (TriggerOptions & FunctionOptions & DropOptions),
+    triggerOptions: (TriggerOptions & DropOptions) | (TriggerOptions & CreateFunctionOptions & DropOptions),
     definition?: Value,
   ) => {
     const { constraint, condition, operation, deferrable, deferred, functionParams = [] } = triggerOptions
@@ -73,7 +73,7 @@ export function createTrigger(mOptions: MigrationOptions) {
       ? `${createFunction(mOptions)(
           functionName,
           [],
-          { ...(triggerOptions as FunctionOptions), returns: 'trigger' },
+          { ...(triggerOptions as CreateFunctionOptions), returns: 'trigger' },
           definition,
         )}\n`
       : ''

@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:12
+  image: circleci/node:14
 
 set-npm-global: &set-npm-global
   run:
@@ -92,7 +92,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:10.13-alpine
+      - image: postgres:10.15-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -106,7 +106,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:11.8-alpine
+      - image: postgres:11.10-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -120,7 +120,21 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:12.5-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - <<: *test-postgres
+  test-pg-13:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -155,12 +169,38 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
+  test-cockroach-19:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
+      - image: cockroachdb/cockroach:v19.2.12
+        command: ['start', '--insecure', '--host=localhost']
+    steps:
+      - <<: *restore
+      - <<: *cockroach-wait
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
+  test-cockroach-20:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
+      - image: cockroachdb/cockroach:v20.2.4
+        command: ['start-single-node', '--insecure', '--host=localhost']
+    steps:
+      - <<: *restore
+      - <<: *cockroach-wait
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-10:
     docker:
       - image: circleci/node:10
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -169,12 +209,12 @@ jobs:
       - <<: *restore
       - <<: *postgres-wait
       - <<: *test-postgres
-  test-node-14:
+  test-node-12:
     docker:
-      - image: circleci/node:14
+      - image: circleci/node:12
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -186,7 +226,7 @@ jobs:
   test-config:
     docker:
       - <<: *node-image
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -210,13 +250,52 @@ jobs:
             EOF
       - <<: *postgres-wait
       - <<: *test-postgres
+  test-dotenv:
+    docker:
+      - <<: *node-image
+      - image: postgres:13.1-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            cat > .env << 'EOF'
+            DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+            EOF
+      - <<: *postgres-wait
+      - <<: *test-postgres
+  test-dotenv-expand:
+    docker:
+      - <<: *node-image
+      - image: postgres:13.1-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            cat > .env << 'EOF'
+            POSTGRES_USER=ubuntu
+            POSTGRES_PASSWORD=ubuntu
+            POSTGRES_DB=circle_test
+            DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB
+            EOF
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-password-1:
     docker:
       - <<: *node-image
         environment:
           # can't use characters @#?/ in password - they have special meaning in url
           - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
@@ -228,7 +307,7 @@ jobs:
   test-password-2:
     docker:
       - <<: *node-image
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
@@ -259,7 +338,7 @@ jobs:
         - PGUSER=ubuntu
         - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - PGDATABASE=circle_test
-    - image: postgres:12.3-alpine
+    - image: postgres:13.1-alpine
       environment:
         - POSTGRES_USER=ubuntu
         - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
@@ -275,7 +354,7 @@ jobs:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -293,7 +372,7 @@ jobs:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -309,7 +388,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -320,12 +399,12 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- --tsconfig tsconfig.json -m test/ts/migrations && npm run migrate down 0 -- --tsconfig tsconfig.json -m test/ts/migrations --timestamps
-  test-typescript-customrunner:
+  test-typescript-customrunner-url:
     docker:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.3-alpine
+      - image: postgres:13.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -335,7 +414,23 @@ jobs:
       - <<: *postgres-wait
       - run:
           name: test
-          command: $(npm bin)/ts-node test/ts/customRunner.ts
+          command: $(npm bin)/ts-node test/ts/customRunnerDBUrl.ts
+  test-typescript-customrunner-client:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+      - image: postgres:13.1-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: $(npm bin)/ts-node test/ts/customRunnerDBClient.ts
   test-create-migration:
     docker:
       - <<: *node-image
@@ -376,19 +471,34 @@ workflows:
       - test-pg-12:
           requires:
             - install
+      - test-pg-13:
+          requires:
+            - install
       - test-cockroach-1:
           requires:
             - install
       - test-cockroach-2:
           requires:
             - install
+      - test-cockroach-19:
+          requires:
+            - install
+      - test-cockroach-20:
+          requires:
+            - install
       - test-node-10:
           requires:
             - install
-      - test-node-14:
+      - test-node-12:
           requires:
             - install
       - test-config:
+          requires:
+            - install
+      - test-dotenv:
+          requires:
+            - install
+      - test-dotenv-expand:
           requires:
             - install
       - test-password-1:
@@ -409,7 +519,10 @@ workflows:
       - test-typescript-migration:
           requires:
           - install
-      - test-typescript-customrunner:
+      - test-typescript-customrunner-url:
+          requires:
+          - install
+      - test-typescript-customrunner-client:
           requires:
           - install
       - test-create-migration:

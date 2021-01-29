@@ -1,12 +1,12 @@
 import { Name, Value, DropOptions } from './generalTypes'
-import { FunctionOptions } from './functionsTypes'
+import { CreateFunctionOptions } from './functionsTypes'
 
 export interface TriggerOptions {
   when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
   operation: string | string[]
   constraint?: boolean
   function?: Name
-  functionParams?: Value[]
+  functionParams?: readonly Value[]
   level?: 'STATEMENT' | 'ROW'
   condition?: string
   deferrable?: boolean
@@ -21,7 +21,7 @@ type CreateTriggerFn1 = (
 type CreateTriggerFn2 = (
   tableName: Name,
   triggerName: string,
-  triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+  triggerOptions: TriggerOptions & CreateFunctionOptions & DropOptions,
   definition: Value,
 ) => string | string[]
 type CreateTriggerFn = CreateTriggerFn1 | CreateTriggerFn2

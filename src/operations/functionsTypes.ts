@@ -11,7 +11,7 @@ export type FunctionParam = string | FunctionParamType
 
 export interface FunctionOptions {
   returns?: string
-  language: string
+  language?: string
   replace?: boolean
   window?: boolean
   behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE' | 'LEAKPROOF'
@@ -25,30 +25,34 @@ export interface FunctionOptions {
   support?: string
 }
 
-interface AlterFunctionOptionsEn {
+export interface CreateFunctionOptions extends FunctionOptions {
+  language: string
+}
+
+interface AlterFunctionOptions extends FunctionOptions {
   owner?: string
 }
 
 type CreateFunctionFn = (
   functionName: Name,
-  functionParams: FunctionParam[],
-  functionOptions: FunctionOptions & DropOptions,
+  functionParams: readonly FunctionParam[],
+  functionOptions: CreateFunctionOptions & DropOptions,
   definition: Value,
 ) => string | string[]
 export type CreateFunction = CreateFunctionFn & { reverse: CreateFunctionFn }
 export type AlterFunction = (
   functionName: Name,
-  functionParams: FunctionParam[],
-  functionOptions: AlterFunctionOptionsEn & FunctionOptions,
+  functionParams: readonly FunctionParam[],
+  functionOptions: AlterFunctionOptions,
 ) => string | string[]
 export type DropFunction = (
   functionName: Name,
-  functionParams: FunctionParam[],
+  functionParams: readonly FunctionParam[],
   dropOptions?: DropOptions,
 ) => string | string[]
 type RenameFunctionFn = (
   oldFunctionName: Name,
-  functionParams: FunctionParam[],
+  functionParams: readonly FunctionParam[],
   newFunctionName: Name,
 ) => string | string[]
 export type RenameFunction = RenameFunctionFn & { reverse: RenameFunctionFn }
